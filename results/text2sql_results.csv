@@ -1,0 +1,20 @@
+question,gold_sql,predicted_sql,exact_match,execution_match
+Show me all disease mutations with ref_aa E,SELECT * FROM disease_mutation WHERE ref_aa = 'E',Here's the SQL query to answer your question:,False,False
+In how many FDA tests was manufacturer 23andMe involved?,"SELECT count(*)
+FROM biomarker_fda_test
+WHERE biomarker_fda_test.test_manufacturer = '23andMe'",A great question!,False,False
+What is the common name for species 'Mus'?,"SELECT speciescommonname
+FROM species
+WHERE genus = 'Mus'","Based on the schema provided, I can see that there is a table called `species` with columns `speciesid`, `genus`, `species`, and `speciescommonname`.",False,False
+What species are there?,SELECT * FROM species,"Based on the schema, to get the list of species, you can query the `species` table. Since `speciesid` is a unique identifier for each species, we can simply SELECT all columns from this table:",False,False
+Show me all disease mutations,SELECT * FROM disease_mutation,A new challenge!,False,False
+Get a list of all biomarker descriptions,SELECT biomarker_description FROM biomarker,"To get a list of all biomarker descriptions, you can use the following SQL query:",False,False
+In how many fda test trials was test manufacturer 'ABBOTT MOLECULAR INC' involved?,"SELECT count(*)
+FROM biomarker_fda_test
+         JOIN biomarker_fda_test_trial
+              ON biomarker_fda_test.test_submission = biomarker_fda_test_trial.test_submission and
+                 biomarker_fda_test.test_trade_name = biomarker_fda_test_trial.test_trade_name
+WHERE test_manufacturer = 'ABBOTT MOLECULAR INC'","To answer this question, we need to query the `biomarker_fda_test` table and filter by `test_manufacturer`. We can then use the `COUNT` function to count the number of rows that meet this condition.",False,False
+Show the gene symbol and the description of cancer biomarkers with panel = 'false',"SELECT biomarker.gene_symbol, biomarker_description FROM biomarker WHERE test_is_a_panel = 'false'","To answer this question, we need to filter the biomarker table to include only those with `test_is_a_panel` set to `'false'`, then select the `gene_symbol` and `biomarker_description`.",False,False
+Show all information about diseases where the name contains 'cancer',SELECT name FROM disease WHERE name like '%cancer%',"Based on the provided schema and examples, I can help translate the natural language question into a SQL query for PostgreSQL.",False,False
+Show me all biomarker titles and QA states for biomarker on EDRN in phase Two,"SELECT biomarker_title, qa_state FROM biomarker_edrn WHERE phase = 'Two'",A new challenge!,False,False

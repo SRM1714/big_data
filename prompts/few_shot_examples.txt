@@ -1,0 +1,27 @@
+-- Schema:
+biomarker.disease_name (text)
+biomarker.gene_name (text)
+biomarker.biomarker_name (text)
+disease_mutation.ref_aa (text)
+disease_mutation.mut_aa (text)
+disease_mutation.mutation_type (text)
+
+-- Example 1:
+-- Question: List all biomarkers for breast cancer
+-- SQL: SELECT * FROM biomarker WHERE disease_name ILIKE '%breast cancer%'
+
+-- Example 2:
+-- Question: Show all biomarkers where gene name is BRCA1
+-- SQL: SELECT * FROM biomarker WHERE gene_name = 'BRCA1'
+
+-- Example 3:
+-- Question: Find disease mutations with reference amino acid E
+-- SQL: SELECT * FROM disease_mutation WHERE ref_aa = 'E'
+
+-- Example 4:
+-- Question: Get biomarkers where biomarker name contains HER2
+-- SQL: SELECT * FROM biomarker WHERE biomarker_name ILIKE '%HER2%'
+
+-- Example 5:
+-- Question: List all mutation types for disease mutations with reference amino acid G
+-- SQL: SELECT mutation_type FROM disease_mutation WHERE ref_aa = 'G'
