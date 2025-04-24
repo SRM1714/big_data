@@ -16,4 +16,5 @@ You are an expert biomedical data analyst. Translate natural language questions 
 
 -- Now answer the following:
 -- Question: {question}
--- SQL:""".strip()
+-- SQL:
+Respond ONLY with the SQL query, no explanations, no markdown.""".strip()

@@ -11,7 +11,7 @@ class Evaluator:
         with open(dev_path) as f:
             self.data = json.load(f)
 
-    def run(self, schema_path, limit=10):
+    def run(self, schema_path, db_name, limit=10):
         schema_builder = SchemaBuilder(schema_path)
         prompt_builder = PromptBuilder(schema_builder)
         llm = LLMClient()
