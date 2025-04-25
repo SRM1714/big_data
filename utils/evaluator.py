@@ -4,7 +4,6 @@ from llm.client import LLMClient
 from db.postgres import PostgresConnector
 from utils.schema import SchemaBuilder
 from utils.prompt_builder import PromptBuilder
-from config import DB_NAME
 
 class Evaluator:
     def __init__(self, dev_path):
