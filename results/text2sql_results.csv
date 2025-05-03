@@ -1,11 +1,20 @@
 question,gold_sql,predicted_sql,exact_match,execution_match
-Find the total cost of the project Theseus,SELECT T1.total_cost FROM projects AS T1 WHERE T1.title = 'Theseus',SELECT total_cost FROM projects WHERE acronym = 'Theseus',False,False
-Show total cost of project with title Theseus,SELECT T1.total_cost FROM projects AS T1 WHERE T1.title = 'Theseus',SELECT total_cost FROM projects WHERE title = 'Theseus',False,False
-Show me the acronyms of projects that started in 2018,SELECT acronym FROM projects WHERE start_year = 2018,SELECT acronym FROM projects WHERE start_year = 2018,True,False
-Get acronyms of projects beginning in 2018,SELECT acronym FROM projects WHERE start_year = 2018,SELECT acronym FROM projects WHERE start_year = 2018,True,False
-Show me the titles of projects that started before 2016,SELECT title FROM projects WHERE start_year < 2016,SELECT title FROM projects WHERE start_date < '2016-01-01',False,False
-Find titles of projects which started earlier than 2016,SELECT title FROM projects WHERE start_year < 2016,SELECT title FROM projects WHERE start_year < 2016,True,False
-Find institutions from the region of Nordjylland,SELECT T1.institutions_name FROM institutions AS T1 JOIN eu_territorial_units AS T2 ON T1.geocode_regions_3 = T2.geocode_regions WHERE T2.description = 'Nordjylland',SELECT * FROM institutions WHERE geocode_regions_3 ILIKE '%Nordjylland%',False,False
-Show the name of institutions based in Nordjylland,SELECT T1.institutions_name FROM institutions AS T1 JOIN eu_territorial_units AS T2 ON T1.geocode_regions_3 = T2.geocode_regions WHERE T2.description = 'Nordjylland',SELECT institutions_name,False,False
-Find the name of principal investigators in projects that started in 2014,SELECT T2.full_name FROM projects AS T1 join people as T2 on T1.principal_investigator = T2.unics_id WHERE T1.start_year = 2014,SELECT p.full_name FROM people AS p JOIN project_members AS pm ON p.unics_id = pm.project_member_role WHERE pm.start_year = '2014',False,False
-Show the full name of people being investigators in projects that began in 2014,SELECT T2.full_name FROM projects AS T1 join people as T2 on T1.principal_investigator = T2.unics_id WHERE T1.start_year = 2014,SELECT full_name FROM people WHERE unics_id IN (,False,False
+Show me all disease mutations with ref_aa E,SELECT * FROM disease_mutation WHERE ref_aa = 'E',SELECT * FROM disease_mutation WHERE ref_aa = 'E',True,False
+In how many FDA tests was manufacturer 23andMe involved?,"SELECT count(*)
+FROM biomarker_fda_test
+WHERE biomarker_fda_test.test_manufacturer = '23andMe'",SELECT COUNT(*),False,False
+What is the common name for species 'Mus'?,"SELECT speciescommonname
+FROM species
+WHERE genus = 'Mus'",SELECT speciescommonname FROM species WHERE genus = 'Mus',False,False
+What species are there?,SELECT * FROM species,SELECT * FROM species,True,False
+Show me all disease mutations,SELECT * FROM disease_mutation,SELECT * FROM disease_mutation,True,False
+Get a list of all biomarker descriptions,SELECT biomarker_description FROM biomarker,SELECT biomarker.biomarker_description FROM biomarker,False,False
+In how many fda test trials was test manufacturer 'ABBOTT MOLECULAR INC' involved?,"SELECT count(*)
+FROM biomarker_fda_test
+         JOIN biomarker_fda_test_trial
+              ON biomarker_fda_test.test_submission = biomarker_fda_test_trial.test_submission and
+                 biomarker_fda_test.test_trade_name = biomarker_fda_test_trial.test_trade_name
+WHERE test_manufacturer = 'ABBOTT MOLECULAR INC'",SELECT COUNT(*),False,False
+Show the gene symbol and the description of cancer biomarkers with panel = 'false',"SELECT biomarker.gene_symbol, biomarker_description FROM biomarker WHERE test_is_a_panel = 'false'","SELECT biomarker.gene_symbol, biomarker_description",False,False
+Show all information about diseases where the name contains 'cancer',SELECT name FROM disease WHERE name like '%cancer%',SELECT *,False,False
+Show me all biomarker titles and QA states for biomarker on EDRN in phase Two,"SELECT biomarker_title, qa_state FROM biomarker_edrn WHERE phase = 'Two'","SELECT b.biomarker_title, b.qa_state",False,False

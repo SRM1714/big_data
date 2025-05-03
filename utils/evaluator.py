@@ -4,6 +4,8 @@ from llm.client import LLMClient
 from db.postgres import PostgresConnector
 from utils.schema import SchemaBuilder
 from utils.prompt_builder import PromptBuilder
+import time
+
 
 class Evaluator:
     def __init__(self, dev_path):
@@ -12,11 +14,12 @@ class Evaluator:
 
     def run(self, schema_path, db_name, limit=10):
         schema_builder = SchemaBuilder(schema_path)
-        prompt_builder = PromptBuilder(schema_builder)
+        prompt_builder = PromptBuilder(schema_builder,self.data)
         llm = LLMClient()
         results = []
 
         for ex in self.data[:limit]:
+            start_time = time.time()
             question = ex["question"]
             gold_sql = ex["query"].strip().rstrip(";")
             db_id = ex["db_id"]
@@ -44,17 +47,25 @@ class Evaluator:
                 db.close()
             except Exception:
                 execution_match = False
+            end_time = time.time()
+            elapsed = end_time - start_time
+
 
             results.append({
                 "question": question,
                 "gold_sql": gold_sql,
                 "predicted_sql": predicted_sql,
                 "exact_match": is_exact,
-                "execution_match": execution_match
+                "execution_match": execution_match,
+                "duration_sec": round(elapsed, 2)
             })
+
 
         df = pd.DataFrame(results)
         df.to_csv("results/text2sql_results.csv", index=False)
-        print("\n✅ Exact Match Accuracy:", df["exact_match"].mean())
-        print("✅ Execution Accuracy:", df["execution_match"].mean())
-        print("📁 Exported to results/text2sql_results.csv")
+        print("\nExact Match Accuracy:", df["exact_match"].mean())
+        print("Execution Accuracy:", df["execution_match"].mean())
+        print("Exported to results/text2sql_results.csv")
+        avg_time = df["duration_sec"].mean()
+        print(f"Average time per query: {avg_time:.2f} seconds")
+
