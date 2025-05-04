@@ -1,4 +1,5 @@
 import openai
+import os
 
 class LLMClient:
     """
@@ -7,7 +8,7 @@ class LLMClient:
     """
     def __init__(self, model="gpt-4.1"):
         # Directly set the API key (hard-coded for quick test)
-        openai.api_key = "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"
+        openai.api_key = os.getenv("OPENAI_API_KEY")
         self.model = model
 
     def infer(self, prompt):
