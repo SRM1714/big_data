@@ -1,4 +1,5 @@
 import json
+import random
 import pandas as pd
 from llm.client import LLMClient
 from db.postgres import PostgresConnector
@@ -8,54 +9,80 @@ from config import DB_NAME
 
 class Evaluator:
     def __init__(self, dev_path):
-        with open(dev_path) as f:
+        # Carica tutto il dev-set in memoria
+        with open(dev_path, encoding="utf-8") as f:
             self.data = json.load(f)
 
-    def run(self, schema_path, limit=10):
+    def run(self, schema_path, limit=100):
+        """
+        Esegue la valutazione su un campione casuale di 'limit' esempi (o su tutto il dataset
+        se limit è None o > len(self.data)).
+        """
         schema_builder = SchemaBuilder(schema_path)
         prompt_builder = PromptBuilder(schema_builder)
         llm = LLMClient()
-        results = []
+        records = []
 
-        for ex in self.data[:limit]:
-            question = ex["question"]
-            gold_sql = ex["query"].strip().rstrip(";")
+        # Scegli a caso 'limit' esempi dal dev-set
+        if limit is None or limit >= len(self.data):
+            examples = self.data.copy()
+        else:
+            examples = random.sample(self.data, limit)
+
+        for ex in examples:
+            q     = ex["question"]
+            gold  = ex["query"].strip().rstrip(";")
             db_id = ex["db_id"]
 
-            prompt = prompt_builder.build_prompt(question, db_id)
-            print("\n---")
-            print(f"[QUESTION]: {question}")
-            print(f"[PROMPT]:\n{prompt}\n")
+            # Costruisci il prompt
+            prompt = prompt_builder.build_prompt(q, db_id)
+            print(f"\n---\n[QUESTION]: {q}\n[PROMPT]:\n{prompt}\n")
 
+            # Chiedi la query al modello
             try:
-                raw_output = llm.infer(prompt)
-                predicted_sql = raw_output.strip().split("\n")[0].strip().rstrip(";")
-                print(f"[LLM RESPONSE]: {raw_output}")
-                print(f"[PREDICTED SQL]: {predicted_sql}")
+                raw       = llm.infer(prompt)
+                predicted = raw.strip().split("\n")[0].rstrip(";")
+                print(f"[LLM RESPONSE]: {raw}")
+                print(f"[PREDICTED SQL]: {predicted}")
             except Exception as e:
-                predicted_sql = f"[ERROR] {e}"
+                predicted = ""
+                print(f"[LLM ERROR]: {e}")
 
-            is_exact = predicted_sql.lower() == gold_sql.lower()
+            # Exact match
+            exact_match = (predicted.lower() == gold.lower())
 
+            # Execution match
             try:
                 db = PostgresConnector(DB_NAME)
-                gold_res = db.run_query(gold_sql)
-                pred_res = db.run_query(predicted_sql)
-                execution_match = gold_res == pred_res
+                gold_res = db.run_query(gold)
+                pred_res = db.run_query(predicted)
                 db.close()
-            except Exception:
-                execution_match = False
 
-            results.append({
-                "question": question,
-                "gold_sql": gold_sql,
-                "predicted_sql": predicted_sql,
-                "exact_match": is_exact,
-                "execution_match": execution_match
+                # Ordiniamo per confronto
+                sorted_gold = sorted(gold_res)
+                sorted_pred = sorted(pred_res)
+                exec_match  = (sorted_gold == sorted_pred)
+
+                if not exec_match:
+                    print(">>> MISMATCH!")
+                    print(" gold_res:", sorted_gold[:5], "… total", len(sorted_gold))
+                    print(" pred_res:", sorted_pred[:5], "… total", len(sorted_pred))
+            except Exception as e:
+                exec_match = False
+                print(f"[SQL EXECUTION ERROR]: {e}")
+
+            # Registra il risultato
+            records.append({
+                "question":        q,
+                "gold_sql":        gold,
+                "predicted_sql":   predicted,
+                "exact_match":     exact_match,
+                "execution_match": exec_match
             })
 
-        df = pd.DataFrame(results)
+        # Salva i risultati
+        df = pd.DataFrame(records)
         df.to_csv("results/text2sql_results.csv", index=False)
-        print("\n✅ Exact Match Accuracy:", df["exact_match"].mean())
-        print("✅ Execution Accuracy:", df["execution_match"].mean())
-        print("📁 Exported to results/text2sql_results.csv")
+        print("\nExact Match Accuracy:  ", df["exact_match"].mean())
+        print("Execution Accuracy:    ", df["execution_match"].mean())
+        print("Results written to results/text2sql_results.csv")
