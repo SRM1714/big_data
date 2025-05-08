@@ -1,20 +1,100 @@
-question,gold_sql,predicted_sql,exact_match,execution_match
-Show me all disease mutations with ref_aa E,SELECT * FROM disease_mutation WHERE ref_aa = 'E',SELECT * FROM disease_mutation WHERE ref_aa = 'E',True,False
-In how many FDA tests was manufacturer 23andMe involved?,"SELECT count(*)
-FROM biomarker_fda_test
-WHERE biomarker_fda_test.test_manufacturer = '23andMe'",SELECT COUNT(*),False,False
-What is the common name for species 'Mus'?,"SELECT speciescommonname
-FROM species
-WHERE genus = 'Mus'",SELECT speciescommonname FROM species WHERE genus = 'Mus',False,False
-What species are there?,SELECT * FROM species,SELECT * FROM species,True,False
-Show me all disease mutations,SELECT * FROM disease_mutation,SELECT * FROM disease_mutation,True,False
-Get a list of all biomarker descriptions,SELECT biomarker_description FROM biomarker,SELECT biomarker.biomarker_description FROM biomarker,False,False
-In how many fda test trials was test manufacturer 'ABBOTT MOLECULAR INC' involved?,"SELECT count(*)
-FROM biomarker_fda_test
-         JOIN biomarker_fda_test_trial
-              ON biomarker_fda_test.test_submission = biomarker_fda_test_trial.test_submission and
-                 biomarker_fda_test.test_trade_name = biomarker_fda_test_trial.test_trade_name
-WHERE test_manufacturer = 'ABBOTT MOLECULAR INC'",SELECT COUNT(*),False,False
-Show the gene symbol and the description of cancer biomarkers with panel = 'false',"SELECT biomarker.gene_symbol, biomarker_description FROM biomarker WHERE test_is_a_panel = 'false'","SELECT biomarker.gene_symbol, biomarker_description",False,False
-Show all information about diseases where the name contains 'cancer',SELECT name FROM disease WHERE name like '%cancer%',SELECT *,False,False
-Show me all biomarker titles and QA states for biomarker on EDRN in phase Two,"SELECT biomarker_title, qa_state FROM biomarker_edrn WHERE phase = 'Two'","SELECT b.biomarker_title, b.qa_state",False,False
+question,gold_sql,predicted_sql,exact_match,execution_match,duration_sec
+Show me the description for FDA approved biomarkers with test approval status 'class II',"SELECT biomarker.biomarker_description
+FROM biomarker
+         JOIN biomarker_fda ON biomarker.id = biomarker_fda.id
+         JOIN biomarker_fda_test on biomarker_fda.test_submission = biomarker_fda_test.test_submission
+WHERE biomarker_fda_test.test_approval_status = 'class II'",SELECT biomarker.biomarker_description,False,False,148.88
+List the descriptions of biomarkers for fda tests with approval status 'class II',"SELECT biomarker.biomarker_description
+FROM biomarker
+         JOIN biomarker_fda ON biomarker.id = biomarker_fda.id
+         JOIN biomarker_fda_test on biomarker_fda.test_submission = biomarker_fda_test.test_submission
+WHERE biomarker_fda_test.test_approval_status = 'class II'",SELECT biomarker.biomarker_description,False,False,203.93
+Return all information from healthy expressions which have an expression score above the average.,SELECT * FROM healthy_expression WHERE expression_score > (SELECT AVG(expression_score) FROM healthy_expression),SELECT *,False,False,191.9
+Return all expressions which have an expression score higher than the average expression score.,SELECT * FROM healthy_expression WHERE expression_score > (SELECT AVG(expression_score) FROM healthy_expression),SELECT *,False,False,192.63
+What are the symbols for biomarkers with type genomic for anatomical entity breast?,"SELECT gene_symbol
+FROM biomarker
+         JOIN biomarker_edrn ON biomarker.id = biomarker_edrn.id
+         JOIN anatomical_entity ON biomarker_edrn.uberon_anatomical_id = anatomical_entity.id
+WHERE anatomical_entity.name = 'breast'
+  and biomarker_edrn.biomarker_type = 'Genomic'",SELECT biomarker.gene_symbol FROM biomarker WHERE biomarker.biomarker_type = 'genomic' AND biomarker.uberon_anatomical_id = 'breast',False,False,192.22
+What are the symbols for biomarkers on the EDRN platform with biomarker type Genomic for anatomical entity 'breast'?,"SELECT gene_symbol
+FROM biomarker
+         JOIN biomarker_edrn ON biomarker.id = biomarker_edrn.id
+         JOIN anatomical_entity ON biomarker_edrn.uberon_anatomical_id = anatomical_entity.id
+WHERE anatomical_entity.name = 'breast'
+  and biomarker_edrn.biomarker_type = 'Genomic'",SELECT,False,False,203.9
+What disease can occur in the liver?,"SELECT disease.name
+FROM anatomical_entity
+         JOIN cancer_tissue ON anatomical_entity.id = cancer_tissue.uberon_anatomical_id
+         JOIN disease ON cancer_tissue.doid = disease.id
+WHERE anatomical_entity.name = 'liver'",SELECT d.name,False,False,219.95
+List the name of diseases that can occur in the anatomical entity 'liver',"SELECT disease.name
+FROM anatomical_entity
+         JOIN cancer_tissue ON anatomical_entity.id = cancer_tissue.uberon_anatomical_id
+         JOIN disease ON cancer_tissue.doid = disease.id
+WHERE anatomical_entity.name = 'liver'",SELECT name,False,False,183.99
+Show distinct manufacturer of tests for gene BRAF ,"SELECT DISTINCT biomarker_fda_test.test_manufacturer
+FROM biomarker
+         JOIN biomarker_fda on biomarker.id = biomarker_fda.id
+         JOIN biomarker_fda_test
+              ON biomarker_fda.test_trade_name = biomarker_fda_test.test_trade_name AND biomarker_fda.test_submission = biomarker_fda_test.test_submission
+WHERE biomarker.gene_symbol = 'BRAF'",SELECT biomarker_fda_test.manufacturer,False,False,189.43
+Show all FDA test manufacturer for biomarkers of gene BRAF ,"SELECT biomarker_fda_test.test_manufacturer
+FROM biomarker
+         JOIN biomarker_fda on biomarker.id = biomarker_fda.id
+         JOIN biomarker_fda_test
+              ON biomarker_fda.test_trade_name = biomarker_fda_test.test_trade_name AND biomarker_fda.test_submission = biomarker_fda_test.test_submission
+WHERE biomarker.gene_symbol = 'BRAF'",SELECT biomarker_fda_test.manufacturer,False,False,210.95
+Show me the name of anatomical entities and species for all species,"SELECT anatomical_entity.name, species.speciescommonname
+FROM anatomical_entity
+         JOIN healthy_expression ON anatomical_entity.id = healthy_expression.uberon_anatomical_id
+         JOIN xref_gene_ensembl ON healthy_expression.ensembl_gene_id = xref_gene_ensembl.ensembl_gene_id
+         JOIN species ON xref_gene_ensembl.speciesid = species.speciesid","SELECT anatomical_entity.name, species.species FROM anatomical_entity JOIN disease ON anatomical_entity.id = disease.anatomical_entity_id JOIN species ON disease.speciesid = species.speciesid",False,False,187.13
+What are the distinct healthy organs where the gene A1BG is expressed.,"SELECT distinct anatomical_entity.name
+FROM healthy_expression
+         JOIN xref_gene_ensembl ON healthy_expression.ensembl_gene_id = xref_gene_ensembl.ensembl_gene_id
+         JOIN anatomical_entity ON healthy_expression.uberon_anatomical_id = anatomical_entity.id
+WHERE xref_gene_ensembl.gene_symbol = 'A1BG'
+  and healthy_expression.expression_level_anatomical_relative != 'ABSENT'",SELECT DISTINCT anatomical_entity.name,False,False,188.77
+Give me symbol and description of biomarkers related to breast at the EDRN phase one,"SELECT biomarker.gene_symbol, biomarker.biomarker_description
+FROM biomarker
+         JOIN biomarker_edrn ON biomarker.id = biomarker_edrn.id
+         JOIN anatomical_entity ON biomarker_edrn.uberon_anatomical_id = anatomical_entity.id
+WHERE anatomical_entity.name = 'breast'
+  and biomarker_edrn.phase = 'One'","SELECT bio.gene_symbol, bio.biomarker_description",False,False,218.24
+Show me the name of the anatomical entity and the expression score of where either gene ENSMUSG00000000037 or gene ENSMUSG00000000078 is expressed in.,"SELECT anatomical_entity.name, healthy_expression.expression_score
+FROM healthy_expression
+         JOIN anatomical_entity
+              ON healthy_expression.uberon_anatomical_id = anatomical_entity.id
+WHERE healthy_expression.ensembl_gene_id = 'ENSMUSG00000000037'
+   OR healthy_expression.ensembl_gene_id = 'ENSMUSG00000000078'","SELECT anatomical_entity.name, healthy_expression.expression_score",False,False,217.38
+What's the NCIt term for biomarker with symbol ALDH4A1?,"SELECT biomarker_fda_ncit_term.ncit_biomarker
+FROM biomarker_fda_ncit_term
+         JOIN biomarker_fda ON biomarker_fda_ncit_term.biomarker_fda_id = biomarker_fda.id
+         JOIN biomarker ON biomarker_fda.id = biomarker.id
+WHERE biomarker.gene_symbol = 'ALDH4A1'",SELECT ncit_biomarker,False,False,188.03
+Show all information about disease mutations of the anatomical entity liver,"SELECT *
+FROM disease_mutation
+         JOIN disease_mutation_tissue ON disease_mutation.id = disease_mutation_tissue.disease_mutation_id
+         JOIN anatomical_entity ON disease_mutation_tissue.uberon_anatomical_id = anatomical_entity.id
+WHERE anatomical_entity.name = 'liver'",SELECT *,False,False,194.44
+List all disease mutations which belong to anatomical entity liver.,"SELECT *
+FROM anatomical_entity
+         JOIN disease_mutation_tissue ON anatomical_entity.id = disease_mutation_tissue.uberon_anatomical_id
+         JOIN disease_mutation ON disease_mutation_tissue.disease_mutation_id = disease_mutation.id
+where anatomical_entity.name = 'liver'",SELECT *,False,False,183.53
+Show me the gene symbol of biomarkers that have an approval status of 'PMP' from the FDA,"SELECT gene_symbol 
+FROM biomarker
+JOIN biomarker_fda ON biomarker.id = biomarker_fda.id
+JOIN biomarker_fda_test ON biomarker_fda.test_submission = biomarker_fda_test.test_submission
+WHERE biomarker_fda_test.test_approval_status = 'PMP'",SELECT biomarker.gene_symbol,False,False,191.1
+What are the desctiptions of biomarkers related to breast cancer?,"SELECT biomarker.biomarker_description
+FROM biomarker
+JOIN biomarker_edrn ON biomarker.id = biomarker_edrn.id
+JOIN anatomical_entity ON biomarker_edrn.uberon_anatomical_id = anatomical_entity.id
+WHERE anatomical_entity.name = 'breast'",SELECT biomarker.biomarker_description,False,False,198.36
+How many biomarkers are associated with each anatomical entity?,"SELECT anatomical_entity.name, COUNT(*)
+FROM biomarker
+JOIN biomarker_edrn ON biomarker.id = biomarker_edrn.id
+JOIN anatomical_entity ON biomarker_edrn.uberon_anatomical_id = anatomical_entity.id
+GROUP BY anatomical_entity.name","SELECT anatomical_entity.name, COUNT(*)",False,False,201.05

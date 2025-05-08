@@ -28,3 +28,5 @@ DATASETS = {
         "db": "skyserver_dr16_2020_11_30"
     }
 }
+
+DB_NAME = "oncomx_v1_0_25"

@@ -11,14 +11,15 @@ class Evaluator:
     def __init__(self, dev_path):
         with open(dev_path) as f:
             self.data = json.load(f)
+        self.empieza=60
 
-    def run(self, schema_path, db_name, limit=10):
+    def run(self, schema_path, db_name, limit=20):
         schema_builder = SchemaBuilder(schema_path)
         prompt_builder = PromptBuilder(schema_builder,self.data)
         llm = LLMClient()
         results = []
 
-        for ex in self.data[:limit]:
+        for ex in self.data[self.empieza:self.empieza+limit]:
             start_time = time.time()
             question = ex["question"]
             gold_sql = ex["query"].strip().rstrip(";")
@@ -39,14 +40,40 @@ class Evaluator:
 
             is_exact = predicted_sql.lower() == gold_sql.lower()
 
+            # try:
+            #     db = PostgresConnector(DB_NAME)
+            #     gold_res = db.run_query(gold_sql)
+            #     pred_res = db.run_query(predicted_sql)
+            #     execution_match = gold_res == pred_res
+            #     db.close()
+            # except Exception:
+            #     execution_match = False
+            # Execution match
             try:
-                db = PostgresConnector(DB_NAME)
+                db = PostgresConnector("oncomx_v1_0_25")
+                print('a')
+                print(gold_sql)
                 gold_res = db.run_query(gold_sql)
+                print(gold_res)
+                print('b')
+                print(predicted_sql)
                 pred_res = db.run_query(predicted_sql)
-                execution_match = gold_res == pred_res
+                print(pred_res)
                 db.close()
-            except Exception:
-                execution_match = False
+
+                # Ordiniamo per confronto
+                sorted_gold = sorted(gold_res)
+                sorted_pred = sorted(pred_res)
+                exec_match  = (sorted_gold == sorted_pred)
+
+                if not exec_match:
+                    print(">>> MISMATCH!")
+                    print(" gold_res:", sorted_gold[:5], "… total", len(sorted_gold))
+                    print(" pred_res:", sorted_pred[:5], "… total", len(sorted_pred))
+            except Exception as e:
+                exec_match = False
+                print(f"[SQL EXECUTION ERROR]: {e}")
+
             end_time = time.time()
             elapsed = end_time - start_time
 
@@ -56,7 +83,7 @@ class Evaluator:
                 "gold_sql": gold_sql,
                 "predicted_sql": predicted_sql,
                 "exact_match": is_exact,
-                "execution_match": execution_match,
+                "execution_match": exec_match,
                 "duration_sec": round(elapsed, 2)
             })
 
