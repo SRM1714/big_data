@@ -1,0 +1,123 @@
+-- Question: Show name of diseases where the gene expression with symbol A1BG has a statistical significance of 'Yes'
+-- SQL: SELECT disease.name
+FROM differential_expression
+         JOIN disease ON differential_expression.doid = disease.id
+WHERE differential_expression.gene_symbol = 'A1BG'
+  and differential_expression.statistical_significance = 'Yes'
+
+-- Question: Show biomarker gene symbol and description for 'breast cancer'
+-- SQL: SELECT biomarker.gene_symbol, biomarker.biomarker_description
+FROM biomarker
+         JOIN biomarker_fda on biomarker.id = biomarker_fda.id
+         JOIN biomarker_fda_test ON biomarker_fda.test_submission = biomarker_fda_test.test_submission and
+                                    biomarker_fda.test_trade_name = biomarker_fda_test.test_trade_name
+         JOIN disease ON disease.id = biomarker_fda_test.doid
+WHERE disease.name = 'breast cancer'
+
+-- Question: How many biomarkers are associated with each anatomical entity?
+-- SQL: SELECT anatomical_entity.name, COUNT(*)
+FROM biomarker
+JOIN biomarker_edrn ON biomarker.id = biomarker_edrn.id
+JOIN anatomical_entity ON biomarker_edrn.uberon_anatomical_id = anatomical_entity.id
+GROUP BY anatomical_entity.name
+
+-- Question: Show the pvalue of differential expression of lung cancer
+-- SQL: SELECT differential_expression.pvalue
+FROM differential_expression
+         JOIN disease ON differential_expression.doid = disease.id
+WHERE disease.name = 'lung cancer'
+
+-- Question: Get the biomarker gene symbol and biomarker description for disease with name 'breast cancer'
+-- SQL: SELECT biomarker.gene_symbol, biomarker.biomarker_description
+FROM biomarker
+         JOIN biomarker_fda on biomarker.id = biomarker_fda.id
+         JOIN biomarker_fda_test ON biomarker_fda.test_submission = biomarker_fda_test.test_submission and
+                                    biomarker_fda.test_trade_name = biomarker_fda_test.test_trade_name
+         JOIN disease ON disease.id = biomarker_fda_test.doid
+WHERE disease.name = 'breast cancer'
+
+-- Question: Show all the information about biomarkers and the species for which they are healthy expressed
+-- SQL: select bio.biomarker_description, species.species
+from biomarker as bio
+    join biomarker_edrn as be on bio.id = be.id
+    join anatomical_entity as ae on be.uberon_anatomical_id = ae.id
+    join healthy_expression as he on ae.id = he.uberon_anatomical_id
+    join xref_gene_ensembl as xge on he.ensembl_gene_id = xge.ensembl_gene_id
+    join species as s on xge.speciesid = s.speciesid
+
+-- Question: How many FDA tests did manufacturer 23andMe?
+-- SQL: SELECT count(*)
+FROM biomarker_fda_test
+WHERE biomarker_fda_test.test_manufacturer = '23andMe'
+
+-- Question: Who manufactures lung cancer prognosis tests that are approved by the FDA?
+-- SQL: SELECT distinct(d.name), bft.test_trade_name, bft.test_manufacturer
+FROM biomarker_fda_test_use as bftu JOIN biomarker_fda_test as bft 
+        ON bft.test_trade_name = bftu.test_trade_name 
+        AND bft.test_submission = bftu.test_submission 
+JOIN biomarker_fda as bf ON bft.test_trade_name = bf.test_trade_name 
+        AND bft.test_submission = bf.test_submission 
+JOIN biomarker as b ON bf.id = b.id
+JOIN disease AS d ON d.id = bft.doid
+WHERE
+        bftu.approved_indication LIKE '%prognosis%'
+                AND d.name LIKE '%lung%'
+
+-- Question: Show disease mutation chromosome positions for skin cancer
+-- SQL: SELECT disease_mutation.chromosome_pos
+FROM disease_mutation
+         JOIN disease ON disease_mutation.doid = disease.id
+WHERE disease.name = 'skin cancer'
+
+-- Question: Show all information about disease mutations of the anatomical entity liver
+-- SQL: SELECT *
+FROM disease_mutation
+         JOIN disease_mutation_tissue ON disease_mutation.id = disease_mutation_tissue.disease_mutation_id
+         JOIN anatomical_entity ON disease_mutation_tissue.uberon_anatomical_id = anatomical_entity.id
+WHERE anatomical_entity.name = 'liver'
+
+-- Question: Show all of the edrn biomarkers that have been approved by the FDA
+-- SQL: SELECT t1.id from biomarker as t1 join biomarker_edrn as t2 on t1.id = t2.id WHERE t1.id
+IN (SELECT t1.id from biomarker as t1 join biomarker_fda as t2 on t1.id = t2.id join biomarker_fda_test_use as bftu on t2.test_submission = bftu.test_submission)
+
+-- Question: What disease can occur in the liver?
+-- SQL: SELECT disease.name
+FROM anatomical_entity
+         JOIN cancer_tissue ON anatomical_entity.id = cancer_tissue.uberon_anatomical_id
+         JOIN disease ON cancer_tissue.doid = disease.id
+WHERE anatomical_entity.name = 'liver'
+
+-- Question: Get the p-value of differential expressions for the disease 'lung cancer'
+-- SQL: SELECT differential_expression.pvalue
+FROM differential_expression
+         JOIN disease ON differential_expression.doid = disease.id
+WHERE disease.name = 'lung cancer'
+
+-- Question: Show all FDA test manufacturer for biomarkers of gene BRAF
+-- SQL: SELECT biomarker_fda_test.test_manufacturer
+FROM biomarker
+         JOIN biomarker_fda on biomarker.id = biomarker_fda.id
+         JOIN biomarker_fda_test
+              ON biomarker_fda.test_trade_name = biomarker_fda_test.test_trade_name AND biomarker_fda.test_submission = biomarker_fda_test.test_submission
+WHERE biomarker.gene_symbol = 'BRAF'
+
+-- Question: How many healthy expression are there for stage name starting with 'late adult'?
+-- SQL: SELECT COUNT(*) FROM healthy_expression JOIN stage ON healthy_expression.uberon_developmental_id = stage.id WHERE stage.name LIKE 'late adult%'
+
+-- Question: What species are there?
+-- SQL: SELECT * FROM species
+
+-- Question: What is the common name for species 'Mus'?
+-- SQL: SELECT speciescommonname
+FROM species
+WHERE genus = 'Mus'
+
+-- Question: Show the gene symbol and the description of cancer biomarkers with panel = 'false'
+-- SQL: SELECT biomarker.gene_symbol, biomarker_description FROM biomarker WHERE test_is_a_panel = 'false'
+
+-- Question: Show me all information about disease mutations with amino acid residue (ref_aa) equal to E
+-- SQL: SELECT * FROM disease_mutation WHERE ref_aa = 'E'
+
+-- Question: Show me all information about species
+-- SQL: SELECT * FROM species
+

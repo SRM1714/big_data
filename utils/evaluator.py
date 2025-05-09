@@ -5,7 +5,7 @@ from llm.client import LLMClient
 from db.postgres import PostgresConnector
 from utils.schema import SchemaBuilder
 from utils.prompt_builder import PromptBuilder
-from config import DB_NAME
+#from config import DB_NAME
 
 class Evaluator:
     def __init__(self, dev_path):
@@ -13,13 +13,13 @@ class Evaluator:
         with open(dev_path, encoding="utf-8") as f:
             self.data = json.load(f)
 
-    def run(self, schema_path, limit=100):
+    def run(self, schema_path, db_name, few_shot_path, limit):
         """
         Esegue la valutazione su un campione casuale di 'limit' esempi (o su tutto il dataset
         se limit è None o > len(self.data)).
         """
         schema_builder = SchemaBuilder(schema_path)
-        prompt_builder = PromptBuilder(schema_builder)
+        prompt_builder = PromptBuilder(schema_builder, few_shot_path)
         llm = LLMClient()
         records = []
 
@@ -41,7 +41,7 @@ class Evaluator:
             # Chiedi la query al modello
             try:
                 raw       = llm.infer(prompt)
-                predicted = raw.strip().split("\n")[0].rstrip(";")
+                predicted = raw#.strip().split("\n")[0].rstrip(";")
                 print(f"[LLM RESPONSE]: {raw}")
                 print(f"[PREDICTED SQL]: {predicted}")
             except Exception as e:
@@ -53,8 +53,12 @@ class Evaluator:
 
             # Execution match
             try:
-                db = PostgresConnector(DB_NAME)
+                db = PostgresConnector(db_name)
                 gold_res = db.run_query(gold)
+                print('ACTTUAL QUERY')
+                print(gold)
+                print('PREDICTED QUERY')
+                print(predicted)
                 pred_res = db.run_query(predicted)
                 db.close()
 
