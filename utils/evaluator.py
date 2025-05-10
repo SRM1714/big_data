@@ -41,7 +41,7 @@ class Evaluator:
             # Chiedi la query al modello
             try:
                 raw       = llm.infer(prompt)
-                predicted = raw#.strip().split("\n")[0].rstrip(";")
+                predicted = raw.strip().split("\n")[0].rstrip(";")
                 print(f"[LLM RESPONSE]: {raw}")
                 print(f"[PREDICTED SQL]: {predicted}")
             except Exception as e:
