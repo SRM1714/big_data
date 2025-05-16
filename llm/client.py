@@ -1,44 +1,31 @@
+# llm/client.py
+
 import openai
-import os
-import requests
-from config import MODEL_NAME
 
 class LLMClient:
-    def __init__(self, model=MODEL_NAME):
+    """
+    LLM client using OpenAI API. 
+    ATTENZIONE: la chiave è hard-codata per test rapidi, 
+    revocala subito dopo aver finito!
+    """
+    def __init__(self, model="gpt-4.1"):
+        # Hard-code temporaneo della chiave
+        openai.api_key = "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"
         self.model = model
-        openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    def infer(self, prompt):
-        if self.model=="gpt4.1":
-            try:
-                response = openai.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": prompt}],
-                )
-                content = response.choices[0].message.content.strip()
-                print(f"[LLMClient] Received response: {content[:100]}...")
-                return content
-            except Exception as e:
-                print(f"[LLMClient Error] {type(e).__name__}: {e}")
-                return ""
-
-        else:
-            response = requests.post(
-                "http://localhost:11434/api/generate",
-                json={"model": self.model, "prompt": prompt, "stream": False}
+    def infer(self, prompt: str) -> str:
+        """
+        Invia il prompt all’API OpenAI e restituisce il contenuto generato.
+        Usa il nuovo client openai>=1.0.0.
+        """
+        try:
+            response = openai.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
             )
-            return response.json()["response"]
-
-# import requests
-# from config import MODEL_NAME
-
-# class LLMClient:
-#     def __init__(self, model=MODEL_NAME):
-#         self.model = model
-
-#     def infer(self, prompt):
-#         response = requests.post(
-#             "http://localhost:11434/api/generate",
-#             json={"model": self.model, "prompt": prompt, "stream": False}
-#         )
-#         return response.json()["response"]
+            content = response.choices[0].message.content.strip()
+            print(f"[LLMClient] Ricevuto (max 100 car.): {content[:100]}...")
+            return content
+        except Exception as e:
+            print(f"[LLMClient Error] {type(e).__name__}: {e}")
+            return ""

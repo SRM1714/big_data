@@ -2,19 +2,22 @@ import json
 import random
 from pathlib import Path
 
-def generate_few_shot(dev_path: str, out_path: str, n_total: int = 30, n_complex: int = 15):
+def generate_few_shot(dev_path: str,
+                      out_path: str,
+                      n_total: int = 30,
+                      n_complex: int = 15):
+    """
+    Estrae n_total esempi few-shot dal dev-set:
+      - fino a n_complex esempi ‘complessi’ (contengono JOIN/GROUP/DISTINCT/COUNT/EXISTS/IN)
+      - il resto da quelli ‘semplici’
+    """
     COMPLEX_KW = ('JOIN','GROUP','DISTINCT','COUNT','EXISTS','IN (')
 
-    dev_file = Path(dev_path)
-    out_file = Path(out_path)
-
-    with dev_file.open(encoding='utf-8') as f:
-        data = json.load(f)
-
+    data = json.load(Path(dev_path).open(encoding='utf-8'))
     all_ex = []
     for ex in data:
-        q = ex.get('question', '').strip().replace('\n', ' ')
-        sql = ex.get('query', ex.get('sql', '')).strip().rstrip(';')
+        q   = ex.get('question','').strip().replace('\n',' ')
+        sql = ex.get('query', ex.get('sql','')).strip().rstrip(';')
         if q and sql:
             all_ex.append((q, sql))
 
@@ -22,23 +25,14 @@ def generate_few_shot(dev_path: str, out_path: str, n_total: int = 30, n_complex
     simple_ex  = [e for e in all_ex if e not in complex_ex]
 
     random.seed(42)
-
-    available_complex = min(n_complex, len(complex_ex))
-    chosen = random.sample(complex_ex, available_complex)
-
+    chosen = random.sample(complex_ex, min(n_complex, len(complex_ex)))
     remain = n_total - len(chosen)
-    available_simple = min(remain, len(simple_ex))
+    chosen += random.sample(simple_ex, min(remain, len(simple_ex)))
 
-    chosen += random.sample(simple_ex, available_simple)
-
-    total_final = len(chosen)
-    if total_final < n_total:
-        print(f"[FewShot] ⚠️ Solo se generaron {total_final} ejemplos (faltaban suficientes complejos/simples)")
-
-
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-    with out_file.open('w', encoding='utf-8') as f:
+    out = Path(out_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open('w', encoding='utf-8') as f:
         for q, sql in chosen:
             f.write(f"-- Question: {q}\n-- SQL: {sql}\n\n")
 
-    print(f"[FewShot] ✅ Written {len(chosen)} examples to {out_file}")
+    print(f"[FewShot] ✅ Written {len(chosen)} examples to {out}")
