@@ -1,0 +1,90 @@
+-- Question: Find the code and title of the funding scheme which funded the highest number of projects.
+-- SQL: select s.code, s.title from funding_schemes as s where s.code = (select s2.code from funding_schemes as s2 join projects as p on s2.code = p.ec_fund_scheme group by s2.code order by count(*) desc LIMIT 1)
+
+-- Question: Show the full name of people being investigators in projects that began in 2014
+-- SQL: SELECT T2.full_name FROM projects AS T1 join people as T2 on T1.principal_investigator = T2.unics_id WHERE T1.start_year = 2014
+
+-- Question: What is the title of the subject area that has been granted the most funding
+-- SQL: SELECT t1.title, MAX(t3.ec_max_contribution) from subject_areas as t1 join project_subject_areas as t2 on t1.code = t2.subject_area join projects as t3 on t2.project = t3.unics_id  group by t1.title order by  MAX(t3.ec_max_contribution) DESC LIMIT 1
+
+-- Question: Which institutions have never been project coordinators
+-- SQL: SELECT distinct member_name from project_members WHERE member_name NOT in (SELECT member_name from project_members where member_role = 'coordinator')
+
+-- Question: How many projects have an objective which contains 'carbon capturing'?
+-- SQL: select count(*) from projects where objective like '%carbon capturing%'
+
+-- Question: Show the acronym of projects with a member from Greece
+-- SQL: Select p.acronym from projects as p join project_members as pm on p.unics_id = pm.project join institutions as i on pm.institution_id = i.unics_id join countries as c on i.country_id = c.unics_id where c.country_name = 'Greece'
+
+-- Question: Show the titles of all of the projects in the subject area of Climate change and Carbon cycle research
+-- SQL: SELECT t3.title from subject_areas as t1 join project_subject_areas as t2 on t1.code = t2.subject_area join projects as t3 on t2.project = t3.unics_id WHERE t1.title = 'Climate change and Carbon cycle research'
+
+-- Question: Find all different topics of projects that ended in 2014
+-- SQL: SELECT distinct t.title FROM projects AS T1 join project_topics as pt on T1.unics_id = pt.project join topics as t on pt.topic = t.code where t1.end_year = 2014
+
+-- Question: Which funding scheme provided the most funding
+-- SQL: SELECT t1.title, sum(ec_max_contribution) from funding_schemes as t1 join projects as t2 on t1.code = t2.ec_fund_scheme group by t1.title ORDER BY sum(ec_max_contribution) DESC LIMIT 1
+
+-- Question: Which entity located outside of the EU has received the most funding?
+-- SQL: SELECT t1.member_name, p.ec_max_contribution FROM project_members as t1 join activity_types as t2 on t1.activity_type = t2.code join projects as p on t1.project = p.unics_id WHERE t1.geocode_regions_3 = 'NONEU' ORDER BY ec_max_contribution DESC LIMIT 1
+
+-- Question: Count the number of project members that are Educational Establishments
+-- SQL: SELECT count (distinct member_name) FROM project_members as t1 join activity_types as t2 on t1.activity_type = t2.code WHERE t2.description = 'Higher or Secondary Education Establishments'
+
+-- Question: Which people have worked on more than one project
+-- SQL: SELECT t1.full_name, count(p.title) FROM people as t1 join projects as p on t1.unics_id = p.principal_investigator group by t1.full_name HAVING count(p.title) > 1
+
+-- Question: Show the acronym and subject area description of projects with subject area “Mathematics and Statistics”
+-- SQL: SELECT t1.acronym, sa.description FROM projects AS T1 join project_subject_areas as psa on T1.unics_id = psa.project join subject_areas as sa on psa.subject_area = sa.code WHERE sa.title = 'Mathematics and Statistics'
+
+-- Question: Which subject area has recieved the least funding contribution
+-- SQL: SELECT t1.title, MIN(t3.ec_max_contribution) from subject_areas as t1 join project_subject_areas as t2 on t1.code = t2.subject_area join projects as t3 on t2.project = t3.unics_id  group by t1.title order by  MIN(t3.ec_max_contribution) DESC LIMIT 1
+
+-- Question: Get names of project members who's activity type description is Research Organisations
+-- SQL: select member_name from project_members as mb join activity_types as a on a.code = mb.activity_type where a.description = 'Research Organisations'
+
+-- Question: Find the name of principal investigators in projects that started in 2014
+-- SQL: SELECT T2.full_name FROM projects AS T1 join people as T2 on T1.principal_investigator = T2.unics_id WHERE T1.start_year = 2014
+
+-- Question: Show the name of institutions based in Nordjylland
+-- SQL: SELECT T1.institutions_name FROM institutions AS T1 JOIN eu_territorial_units AS T2 ON T1.geocode_regions_3 = T2.geocode_regions WHERE T2.description = 'Nordjylland'
+
+-- Question: How many project members are businesses?
+-- SQL: SELECT count(member_name) FROM project_members as t1 join activity_types as t2 on t1.activity_type = t2.code WHERE t2.code = 'PRC'
+
+-- Question: Find the id of projects with at least 100 members
+-- SQL: select p.unics_id from projects as p join project_members as pm on p.unics_id = pm.project group by p.unics_id having count(p.unics_id) >= 100
+
+-- Question: List all of the titles and the amount of funding that has been dispersed per programme
+-- SQL: SELECT t1.title, sum(t3.ec_max_contribution) from programmes as t1 join project_programmes as t2 on t1.code = t2.programme join projects as t3 on t3.unics_id = t2.project group by t1.title
+
+-- Question: Show total cost of project with title Theseus
+-- SQL: SELECT T1.total_cost FROM projects AS T1 WHERE T1.title = 'Theseus'
+
+-- Question: Show titles of programmes which have FP7 as parent program
+-- SQL: select title from programmes where parent = 'FP7'
+
+-- Question: Show the title of the project with the highest total cost
+-- SQL: Select p.title from projects as p where total_cost = (select max(p2.total_cost) from projects as p2)
+
+-- Question: Show the title and the start year of the most recent projects
+-- SQL: SELECT p.title, p.start_year from projects as p order by start_year DESC
+
+-- Question: What is the objective of the project with acronym DEEPCARBON?
+-- SQL: select objective from projects where acronym = 'DEEPCARBON'
+
+-- Question: List all of the possible roles that project members can have in projects
+-- SQL: SELECT pmr.description from project_member_roles as pmr
+
+-- Question: Show all of the programmes with titles that are related to climate
+-- SQL: SELECT p.title from programmes as p WHERE p.title like '%climate%'
+
+-- Question: Show the title of projects with costs higher than 1000000
+-- SQL: select p.title from projects as p where p.total_cost > 1000000
+
+-- Question: Show the total costs of all projects
+-- SQL: SELECT sum(total_cost) FROM projects
+
+-- Question: Show the title of projects with costs higher than a million
+-- SQL: select p.title from projects as p where p.total_cost > 1000000
+

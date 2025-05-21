@@ -1,4 +1,5 @@
-# main.py (snippet aggiornato per passare n_complex)
+# main.py
+
 import argparse
 from utils.evaluator import Evaluator
 from utils.few_shot_generator import generate_few_shot
@@ -23,11 +24,12 @@ if __name__ == "__main__":
     # Set selected model globally
     config.MODEL_NAME = args.model
 
-    # Paths
+    # Paths & config specifiche
     dataset_paths = DATASETS[args.dataset]
-    dev_path = dataset_paths["dev"]
-    schema_path = dataset_paths["tables"]
-    db_name = dataset_paths["db"]
+    dev_path      = dataset_paths["dev"]
+    schema_path   = dataset_paths["tables"]
+    db_name       = dataset_paths["db"]
+    schema_name   = dataset_paths["schema"]
     few_shot_path = f"prompts/{args.dataset}_few_shot.txt"
 
     # Genera dinamicamente i few-shot
@@ -38,11 +40,12 @@ if __name__ == "__main__":
         n_complex=args.n_complex
     )
 
-    # Run evaluation
+    # Run evaluation (ora passa schema_name)
     evaluator = Evaluator(dev_path)
     evaluator.run(
         schema_path=schema_path,
         db_name=db_name,
+        schema_name=schema_name,
         few_shot_path=few_shot_path,
         limit=args.n
     )

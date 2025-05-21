@@ -143,54 +143,39 @@ join biomarker_fda as bio_fda on bio_fda.test_trade_name = fda.test_trade_name
 join biomarker as bio on bio.id = biomarker_fda.id
 where dis.name = "prostate cancer"
 
--- Question: What are the symbols for biomarkers with type genomic for anatomical entity breast?
--- SQL: SELECT gene_symbol
-FROM biomarker
-         JOIN biomarker_edrn ON biomarker.id = biomarker_edrn.id
-         JOIN anatomical_entity ON biomarker_edrn.uberon_anatomical_id = anatomical_entity.id
-WHERE anatomical_entity.name = 'breast'
-  and biomarker_edrn.biomarker_type = 'Genomic'
+-- Question: Show me all information about disease mutations with ref_aa equal to F
+-- SQL: SELECT * FROM disease_mutation WHERE ref_aa = 'F'
 
--- Question: Show me the name of anatomical entities and species for all species
--- SQL: SELECT anatomical_entity.name, species.speciescommonname
-FROM anatomical_entity
-         JOIN healthy_expression ON anatomical_entity.id = healthy_expression.uberon_anatomical_id
-         JOIN xref_gene_ensembl ON healthy_expression.ensembl_gene_id = xref_gene_ensembl.ensembl_gene_id
-         JOIN species ON xref_gene_ensembl.speciesid = species.speciesid
+-- Question: What is the common name for species 'Mus'?
+-- SQL: SELECT speciescommonname
+FROM species
+WHERE genus = 'Mus'
 
--- Question: Show distinct manufacturer of diagnostic tests for gene BRAF
--- SQL: SELECT distinct(biomarker_fda_test.test_manufacturer), biomarker_fda_test_use.actual_use
-FROM biomarker
-         JOIN biomarker_fda on biomarker.id = biomarker_fda.id
-         JOIN biomarker_fda_test
-              ON biomarker_fda.test_trade_name = biomarker_fda_test.test_trade_name AND
-                 biomarker_fda.test_submission = biomarker_fda_test.test_submission
-         JOIN biomarker_fda_test_use ON biomarker_fda_test.test_submission = biomarker_fda_test_use.test_submission and biomarker_fda_test.test_trade_name = biomarker_fda_test_use.test_trade_name
-WHERE biomarker.gene_symbol = 'BRAF'
-  AND biomarker_fda_test_use.actual_use = 'diagnostic'
+-- Question: List the platform method an the test study design for FDA tests from test manufacturer Dako Denmark A/S
+-- SQL: SELECT platform_method, test_study_design
+FROM biomarker_fda_test
+WHERE test_manufacturer = 'Dako Denmark A/S'
 
--- Question: List the name of diseases that can occur in the anatomical entity 'liver'
--- SQL: SELECT disease.name
-FROM anatomical_entity
-         JOIN cancer_tissue ON anatomical_entity.id = cancer_tissue.uberon_anatomical_id
-         JOIN disease ON cancer_tissue.doid = disease.id
-WHERE anatomical_entity.name = 'liver'
+-- Question: Show tests built by a manufacturer starting with 'Roche'
+-- SQL: SELECT *
+FROM biomarker_fda_test
+WHERE test_manufacturer like 'Roche%'
 
--- Question: How many healthy expression are there for 'late adult stage'?
--- SQL: SELECT COUNT(*) FROM healthy_expression JOIN stage ON healthy_expression.uberon_developmental_id = stage.id WHERE stage.name = 'late adult stage'
+-- Question: Show me all biomarkers on the EDRN platform with type protein in phase two.
+-- SQL: SELECT biomarker_title FROM biomarker_edrn WHERE biomarker_type = 'Protein' AND phase = 'Two'
 
--- Question: Get the name of all anatomical entities starting with 'bone'
--- SQL: SELECT name FROM anatomical_entity WHERE name LIKE 'bone%'
-
--- Question: Show me all information about species
--- SQL: SELECT * FROM species
-
--- Question: What is the test trade name for FDA tests where actual use is 'predisposition'?
--- SQL: SELECT test_trade_name FROM biomarker_fda_test_use WHERE actual_use = 'predisposition'
+-- Question: Return all information from healthy expressions which have an expression score above the average.
+-- SQL: SELECT * FROM healthy_expression WHERE expression_score > (SELECT AVG(expression_score) FROM healthy_expression)
 
 -- Question: Show the gene symbol and the description of cancer biomarkers which are not in a panel
 -- SQL: SELECT biomarker.gene_symbol, biomarker_description FROM biomarker WHERE test_is_a_panel = 'false'
 
--- Question: Show me all disease mutations with ref_aa E
+-- Question: Show me all information about disease mutations with amino acid residue (ref_aa) equal to E
 -- SQL: SELECT * FROM disease_mutation WHERE ref_aa = 'E'
+
+-- Question: Show me all biomarker titles and QA states for biomarker on EDRN in phase Two
+-- SQL: SELECT biomarker_title, qa_state FROM biomarker_edrn WHERE phase = 'Two'
+
+-- Question: Show me all information about species
+-- SQL: SELECT * FROM species
 

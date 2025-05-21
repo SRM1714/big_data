@@ -10,7 +10,7 @@ class LLMClient:
     """
     def __init__(self, model="gpt-4.1"):
         # Hard-code temporaneo della chiave
-        openai.api_key = "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"
+        openai.api_key = "ciao"
         self.model = model
 
     def infer(self, prompt: str) -> str:

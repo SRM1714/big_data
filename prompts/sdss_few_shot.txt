@@ -1,0 +1,90 @@
+-- Question: What is the redshift of the center object that has the minimal distance to the nearest neighbor
+-- SQL: SELECT s.z from specobj as s join photoobj as p on s.bestobjid = p.objid join neighbors as n on p.objid = n.objid order by n.distance asc limit 1
+
+-- Question: Find properties of all spectroscopic observed galaxy,  whose right ascension is greater than 185 and less than 186, declination is greater than 15 and less than 16.
+-- SQL: select p.objID, p.ra, p.dec, s.z from Photoobj as p join specobj as s on s.bestobjid = p.objid where s.ra > 185 and s.ra < 186 AND s.dec > 15 and s.dec < 16 and s.class = 'GALAXY'
+
+-- Question: Show me the object id, right ascension, and declination of photometrically observed star that have spectral observations.
+-- SQL: select p.objid, p.ra, p.dec from photoobj as p join specobj as s on s.bestobjid = p.objid join photo_type as pt on p.type = pt.value where pt.name = 'STAR'
+
+-- Question: Find spectroscopic objects of equivalent width estimates of galactic-stars from these spectroscopic objects.
+-- SQL: select sp.specobjid from spplines as sp join specobj as s on sp.specobjid = s.specobjid
+
+-- Question: Show me the spectroscopically observable Galaxy with magnitude g between 17 and 18, and redshift below 0.05. Retrieve the object id, right ascension and declination of them.
+-- SQL: select p.objid, p.ra, p.dec from photoobj as p join specobj as s on s.bestobjid = p.objid where s.class = 'GALAXY' and p.g between 17 and 18 and s.z < 0.05
+
+-- Question: Show me the object id, right ascension and declination of photometrically observable Star with the constraints: color band u - g < 0.5
+-- SQL: select p.objid, p.ra, p.dec from photoobj as p join photo_type as pt on p.type = pt.value where pt.name = 'STAR' and p.u - p.g < 0.5
+
+-- Question: Find the object id, right ascension and declination of spectroscopic Galaxy, which have value of magnitude g between 17 and 18 and redshift less than 0.05.
+-- SQL: select p.objid, p.ra, p.dec from photoobj as p join specobj as s on s.bestobjid = p.objid where s.class = 'GALAXY' and p.g between 17 and 18 and s.z < 0.05
+
+-- Question: Show me the photometrically observed star with the following constraints in its color bands, u - g < 0.4, g - r < 0.7, r - i > 0.4 and i - z > 0.4
+-- SQL: select p.objid from photoobj as p JOIN photo_type as pt on p.type = pt.value where pt.name = 'STAR' and p.u - p.g < 0.4  and p.g - p.r < 0.7 and p.r - p.i > 0.4 and p.i - p.z > 0.4
+
+-- Question: Fetch me the object id, right ascension, declination, and redshift of spectroscopic observed star in a certain area, of which the right ascension is in an unbouded interval of 185 and 186, declination is in an unbouded interval of 15 and 16.
+-- SQL: select p.objid, p.ra, p.dec, s.z from Photoobj as p join specobj as s on s.bestobjid = p.objid where s.ra > 185 and s.ra < 186 AND s.dec > 15 and s.dec < 16 and s.class = 'STAR'
+
+-- Question: Find the number of photometric objects grouped by their photometrically observed type name.
+-- SQL: select pt.name, count(*) from photoobj as p join photo_type as pt on pt.value = p.type group by pt.name
+
+-- Question: Fetch me the spectroscopic object id, the spectroscopic class and subclass of Galaxy with AGN observed both spectroscopically and photometrically.
+-- SQL: select s.specobjid, s.class, s.subclass from specobj as s join photoobj as p on s.bestobjid = p.objid join photo_type as pt on p.type = pt.value where s.subclass like '%AGN%' and s.class = 'GALAXY' and pt.name = 'GALAXY'
+
+-- Question: Show me object id, right ascensions and declinations of photometrically observed star in a certain area, of which the right ascension is between 185 and 186, declination is bertween 15 and 16.
+-- SQL: select p.objid, p.ra, p.dec from photoobj as p JOIN photo_type as pt on p.type = pt.value where p.ra > 185 and p.ra < 186 and p.dec > 15 and p.dec < 16 and pt.name = 'STAR'
+
+-- Question: Fetch the least distance of the nearst neighbors. Retrieve the corresponding galactic latitude, galactic longitude as well.
+-- SQL: SELECT p.b, p.l, n.distance from photoobj as p join neighbors n on p.objid = n.objid where n.distance = (select min(n.distance) from neighbors as n)
+
+-- Question: Find redshift, right ascension and declination of all photometrically observed Starforming Galaxy
+-- SQL: SELECT T1.z, T1.ra, T1.dec FROM specobj AS T1 JOIN photoobj AS T2 ON T1.bestobjid = T2.objid JOIN photo_type AS T3 ON T2.type = T3.value WHERE T1.subclass = 'STARFORMING' AND T3.name = 'GALAXY'
+
+-- Question: What is photometrically observed Galaxy
+-- SQL: select p.objid from photoobj as p JOIN photo_type as pt on p.type = pt.value where pt.name = 'GALAXY'
+
+-- Question: Count the number of spectroscopic objects that has equivalent width estimates of galactic-stars.
+-- SQL: select count(sp.specobjid) from spplines as sp join specobj as s on sp.specobjid = s.specobjid
+
+-- Question: Find right ascension, declination and photometric type class of equivalent width estimates of galactic-stars from these spectroscopic objects.
+-- SQL: select p.ra, p.dec, p.type from spplines as sp join specobj as s on sp.specobjid = s.specobjid join photoobj as p on p.objid = s.bestobjid
+
+-- Question: Show me the object id, right ascension and declination of photometrically observed Galaxy, of which the the right ascension in a range of from 140.9 to 141.1, the magnitude g is less than 18.0 and the difference of magnitude u and g is higher than 2.2
+-- SQL: select objid, ra, dec from photoobj as p join photo_type as pt on p.type = pt.value where pt.name = 'GALAXY' and p.ra between 140.9 and 141.1 and p.g < 18.0 and p.u - p.g > 2.2
+
+-- Question: Fetch me the object id, right ascension and declination of spectroscopic Galaxy with the color band magnitude g brighter than 18.0 but fainter than 17 and redshift lower than 0.05
+-- SQL: select p.objid, p.ra, p.dec from photoobj as p join specobj as s on s.bestobjid = p.objid where s.class = 'GALAXY' and p.g between 17 and 18 and s.z < 0.05
+
+-- Question: Find all star observed both photometrically and spectroscopically whose subclass is 'Carbon'
+-- SQL: select s.specobjid from specobj as s JOIN photoobj as p ON s.bestobjid = p.objid JOIN photo_type as pt ON p.type = pt.value WHERE s.class = 'STAR' and pt.name = 'STAR' and s.subclass = 'Carbon'
+
+-- Question: Show me the galactic coordinates of the center object with the least distance to the nearest neighbors. Return the distance as well.
+-- SQL: SELECT p.b, p.l, n.distance from photoobj as p join neighbors as n on p.objid = n.objid order by n.distance asc limit 1
+
+-- Question: How many different run number are there
+-- SQL: select count(distinct p.run) from photoobj as p
+
+-- Question: What is the minimal distance between the nearest photometrically observed Star?
+-- SQL: SELECT min(n.distance) FROM neighbors AS n JOIN photo_type AS pt ON n.neighbortype = pt.value JOIN photoobj AS p ON p.objid = n.objid WHERE pt.name = 'STAR' and p.objid in (SELECT p.objid FROM photoobj AS p JOIN photo_type AS pt ON p.type = pt.value WHERE pt.name = 'STAR')
+
+-- Question: Show me the photometrically observable star with the color band magnitude i brighter than 19 but fainter than 0, the difference of magnitude g and r is greater than 2.26, the difference of magnitude i and z is less than 0.25, and either the difference of magnitude u and g is greater than 2.0 or the color band magnitude u is fainter than 22.3
+-- SQL: SELECT p.objid, p.ra, p.dec from photoobj AS p JOIN photo_type AS pt ON p.type = pt.value where pt.name = 'STAR' and i < 19 and i > 0 and g - r > 2.26 and i - z < 0.25 and u - g > 2.0  or  u > 22.3
+
+-- Question: Fetch the right ascension and declination of spectroscopic objects those have equivalent width estimates of galactic-stars
+-- SQL: select p.ra, p.dec, p.type from spplines as sp join specobj as s on sp.specobjid = s.specobjid join photoobj as p on p.objid = s.bestobjid
+
+-- Question: What is the photometric object id and modified julien date of spectroscopic Star with spectral type 'K'
+-- SQL: SELECT T2.objid, T1.mjd FROM specobj AS T1 JOIN photoobj as T2 ON T1.bestobjid = T2.objid WHERE T1.class = 'STAR' and T1.subclass like '%K%'
+
+-- Question: What is the best photometric object to the corresponding spectroscopic object that has emission line estimates of galaxies? Return me the object id, right ascension and declination of the best object.
+-- SQL: select p.objid, p.ra, p.dec from photoobj as p join specobj as s on s.bestobjid = p.objid join galspecline as g on s.specobjid = g.specobjid
+
+-- Question: Find the minimal value of the extinction r for each run number across the photometrically observed Galaxy
+-- SQL: SELECT min( T1.extinction_r), T1.run FROM photoobj AS T1 JOIN photo_type AS T2 ON T1.type = T2.value WHERE T2.name = 'GALAXY' GROUP BY T1.run
+
+-- Question: What is the equivalent width estimates of galactic-stars of spectroscopic objects
+-- SQL: select sp.specobjid from spplines as sp join specobj as s on sp.specobjid = s.specobjid
+
+-- Question: What is photometrically observed star
+-- SQL: select p.objid from photoobj as p JOIN photo_type as pt on p.type = pt.value where pt.name = 'STAR'
+
